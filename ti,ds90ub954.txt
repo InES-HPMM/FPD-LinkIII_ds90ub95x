@@ -1,0 +1,222 @@
+Device tree configuration for the FPD-Link III deserializer DS90UB954 and
+serializer DS90UB953 from Texas Instruments
+
+The deserializer DS90UB954 can have up to two serializers (DS90UB953) connected.
+In the device tree, the serializer nodes are subnodes of the deserializer.
+
+/*------------------------------------------------------------------------------
+* ------------------------------------------------------------------------------
+*
+* Options for DESERIALIZER (DS90UB954):
+*
+* ------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------*/
+
+Integer values:
+- reg:                  I2C address of deserializer
+- csi-lane-count        Number of CSI lanes             default value: 4
+- csi-lane-speed        CSI lane speed in Mbps          default vaule: 1600
+- pdb-gpio              Power-down inverted input pin   ignored if not set
+- pass-gpio             Pass output gpio                ignored if not set
+- lock-gpio             Lock output gpio                ignored if not set
+
+Boolean
+- continuous-clock      Enables continuous clock
+- test-pattern          Enables test pattern
+
+
+/*------------------------------------------------------------------------------
+* ------------------------------------------------------------------------------
+*
+* Options for SERIALIZER (DS90UB953):
+*
+* ------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------*/
+
+Integer values:
+- rx-channel            specifies to which rx port of the deserializer the
+                        serializer is connected to      default value: 0
+- csi-lane-count        Number of CSI lanes             default value: 4
+- i2c-address           I2C address of serializer       default value: 0x18
+                        (this address can be chosen freely)
+
+Boolean:
+- continuous-clock      Enables continuous clock
+- test-pattern          Enables test pattern
+- i2c-pass-through-all  Enable all i2c messages to be forwarded over FPD-Link III
+
+/*------------------------------------------------------------------------------
+* Serializer GPIOs
+*-----------------------------------------------------------------------------*/
+The seralizer has 4 GPIOs. Each can be defined as input or output with the 
+following device tree parameters:
+
+- gpio0-output-enable   0: Input, 1: Output             default value: 0
+- gpio1-output-enable   0: Input, 1: Output             default value: 0
+- gpio2-output-enable   0: Input, 1: Output             default value: 0
+- gpio3-output-enable   0: Input, 1: Output             default value: 0
+
+The following device tree parameters can be used to set the GPIO control:
+
+- gpio0-control         gpio control value (0-10)       default value: 8
+- gpio1-control         gpio control value (0-10)       default value: 8
+- gpio2-control         gpio control value (0-10)       default value: 8
+- gpio3-control         gpio control value (0-10)       default value: 8
+
+Possible GPIO control values are:
+
+    0    connects the GPIO to GPIO0 (input) of deserializer
+    1    connects the GPIO to GPIO1 (input) of deserializer
+    2    connects the GPIO to GPIO2 (input) of deserializer
+    3    NOT SUPPORTED - connects the GPIO to GPIO3 of deserializer 
+    4    connects the GPIO to GPIO4 (input) of deserializer
+    5    connects the GPIO to GPIO5 (input) of deserializer
+    6    connects the GPIO to GPIO6 (input) of deserializer
+    8    output constant value of 0
+    9    output constant value of 1
+    10   frameSync signal
+
+(Deserializer GPIO's set as output is not supported as device tree option. Driver
+must be edited if the deserializer GPIO's are needed as output.)
+
+/*------------------------------------------------------------------------------
+* Serializer CLK_OUT (in synchronized mode)
+*-----------------------------------------------------------------------------*/
+
+CLK_OUT of deserializer can be set. The formula for CLK_OUT is:
+
+                REFCLK (deserializer input clk) * 160       div-m-val
+    CLK_OUT =  ---------------------------------------  *  -----------
+                        hs-clk-div                          div-n-val
+
+Check that: CLK_OUT < 100 MHz and (REFCLK/hs-clk-div) < 6.56 MHz
+
+The parameters can be set in the device tree:
+
+- hs-clk-div            possible values 1,2,4,8 or 16   default value: 4
+- div-m-val                                             default value: 1
+- div-n-val                                             default value: 0x28
+
+
+/*------------------------------------------------------------------------------
+* I2C Alias/Slave pairs:
+*-----------------------------------------------------------------------------*/
+Before sending the i2c message over the FPD-Link III connection to each 
+serializer, the deserializer checks if the address is in the list of aliases for
+the serializer. If so, it replaces the alias address by the corresponding slave 
+address in the pair and forwards it over FPD-Link III. If i2c-pass-through-all 
+is disabled, only messages addressed to an alias address will be passed through.
+It is possible to define up to 8 slave address/alias address pairs for each 
+serializer.
+
+1) Set list-cells to the number of address pairs for each serializer:
+(this has to be set in the deserializer node)
+
+serializer0:
+- i2c_address_s0: num-alias-pairs {list-cells = <X>;}
+
+serializer1:
+- i2c_address_s1: num-alias-pairs {list-cells = <Y>;}
+
+2) Define the slave addresses and alias addresses for each serializer:
+
+serializer0:
+- i2c-slave = <&i2c_address_s0 0x10 0x11 ...>;
+- slave-alias = <&i2c_address_s0 0x20 0x21 ...>;
+
+serializer1:
+- i2c-slave = <&i2c_address_s1 0x10 0x11 ...>;
+- slave-alias = <&i2c_address_s1 0x20 0x21 ...>;
+
+/*------------------------------------------------------------------------------
+* ------------------------------------------------------------------------------
+*
+* Device Tree Examples
+*
+* ------------------------------------------------------------------------------
+*-----------------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------
+* Example 1 (SIMPLE)
+*-----------------------------------------------------------------------------*/
+
+fpdlink: ds90ub954@30 {
+    compatible = "ti,ds90ub954";
+    reg = <0x30>;
+    status = "okay";
+    csi-lane-count = <4>;
+    csi-lane-speed = <800>;
+
+    serializers {
+        status = "okay";
+        num-channels = <2>;
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        serializer@0 {
+            status = "okay";
+            rx-channel=<0>;
+            i2c-address=<0x18>;
+            csi-lane-count = <2>;
+        };
+    };
+};
+
+
+/*------------------------------------------------------------------------------
+* Example 2
+*-----------------------------------------------------------------------------*/
+
+fpdlink: ds90ub954@30 {
+    compatible = "ti,ds90ub954";
+    reg = <0x30>;
+    status = "okay";
+    csi-lane-count = <4>;
+    csi-lane-speed = <1600>;
+    continuous-clock;
+
+    pdb-gpio = <&gpio TEGRA_GPIO(S, 7) 0>;
+	pass-gpio = <&gpio TEGRA_GPIO(S, 0) 0>;
+	lock-gpio = <&gpio TEGRA_GPIO(T, 0) 0>;
+
+    i2c_address_s0: num-alias-pairs {list-cells = <2>;};
+    i2c_address_s1: num-alias-pairs {list-cells = <1>;};
+
+    serializers {
+        status = "okay";
+        num-channels = <2>;
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        serializer@0 {
+            status = "okay";
+            rx-channel=<0>;
+            i2c-address=<0x18>;
+            csi-lane-count = <2>;
+            continuous-clock;
+
+            gpio0-output-enable = <1>;
+            gpio0-control = <0x9>;
+
+            i2c-slave = <&i2c_address_s0 0x10 0x11>;
+            slave-alias = <&i2c_address_s0 0x20 0x21>;
+        };
+
+        serializer@1 {
+            status = "okay";
+            rx-channel=<1>;
+            i2c-address=<0x19>;
+            csi-lane-count = <2>;
+            continuous-clock;
+            i2c-pass-through-all;
+            test-pattern;
+
+            gpio0-output-enable = <1>;
+            gpio0-control = <0x9>;
+
+            i2c-slave = <&i2c_address_s1 0x10>;
+            slave-alias = <&i2c_address_s1 0x22>;
+        };
+    };
+};
+

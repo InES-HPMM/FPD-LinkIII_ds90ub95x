@@ -830,9 +830,8 @@ static int ds90ub954_parse_dt(struct ds90ub954_priv *priv)
 			return err;
 		}
 		dev_info(dev, "pdb-gpio not found, ignoring\n");
-	}else{
-		priv->pdb_gpio = gpio;
 	}
+	priv->pdb_gpio = gpio;
 
 	err = of_property_read_u32(np, "csi-lane-count", &val);
 	if(err) {

@@ -108,36 +108,46 @@ the serializer. If so, it replaces the alias address by the corresponding slave
 address in the pair and forwards it over FPD-Link III. If i2c-pass-through-all 
 is disabled, only messages addressed to an alias address will be passed through.
 It is possible to define up to 8 slave address/alias address pairs for each 
-serializer. 
-
-In the following example, we set two alias address-pairs for serializer0 and 
-one alias address-pair for serializer1.
-
-The example alias pairs for serializer0 are: 
-{0x10 (actual i2c address of device), 0x20 (alias)}
-{0x11 (actual i2c address of device), 0x21 (alias)}
-
-The example alias pair for serializer1 is: 
-{0x10 (actual i2c address of device), 0x22 (alias)}
+serializer.
 
 1) Set list-cells to the number of address pairs for each serializer:
 (this has to be set in the deserializer node)
 
 serializer0:
-- i2c_address_s0: num-alias-pairs {list-cells = <2>;}
+- i2c_address_s0: num-alias-pairs0 {list-cells = <X>;}
 
 serializer1:
-- i2c_address_s1: num-alias-pairs {list-cells = <1>;}
+- i2c_address_s1: num-alias-pairs1 {list-cells = <Y>;}
 
 2) Define the slave addresses and alias addresses for each serializer:
 
 serializer0:
-- i2c-slave = <&i2c_address_s0 0x10 0x11>;
-- slave-alias = <&i2c_address_s0 0x20 0x21>;
+- i2c-slave = <&i2c_address_s0 0x10 0x11 ...>;
+- slave-alias = <&i2c_address_s0 0x20 0x21 ...>;
 
 serializer1:
-- i2c-slave = <&i2c_address_s1 0x10>;
-- slave-alias = <&i2c_address_s1 0x22>;
+- i2c-slave = <&i2c_address_s1 0x10 0x11 ...>;
+- slave-alias = <&i2c_address_s1 0x22 0x23 ...>;
+
+Example:
+i2c_address_s0: num-alias-pairs0 {list-cells = <1>;}
+i2c_address_s1: num-alias-pairs1 {list-cells = <2>;}
+
+i2c-slave = <&i2c_address_s0 0x10>;
+slave-alias = <&i2c_address_s0 0x20>;
+
+i2c-slave = <&i2c_address_s1 0x10 0x11>;
+slave-alias = <&i2c_address_s1 0x21 0x22>;
+
+If the host sends an i2c message to the address 0x20, the message is sent over
+the fpd-link connection to serializer0 to the address 0x10.
+
+If the host sends an i2c message to the address 0x21, the message is sent over
+the fpd-link connection to serializer1 to the address 0x10.
+
+If the host sends an i2c message to the address 0x22, the message is sent over
+the fpd-link connection to serializer1 to the address 0x11.
+
 
 /*------------------------------------------------------------------------------
 * ------------------------------------------------------------------------------
@@ -190,8 +200,8 @@ fpdlink: ds90ub954@30 {
 	pass-gpio = <&gpio TEGRA_GPIO(S, 0) 0>;
 	lock-gpio = <&gpio TEGRA_GPIO(T, 0) 0>;
 
-    i2c_address_s0: num-alias-pairs {list-cells = <2>;};
-    i2c_address_s1: num-alias-pairs {list-cells = <1>;};
+    i2c_address_s0: num-alias-pairs0 {list-cells = <2>;};
+    i2c_address_s1: num-alias-pairs1 {list-cells = <1>;};
 
     serializers {
         status = "okay";

@@ -10,6 +10,12 @@ __Additionally we made a TI FPD-Link III hardware compatible with the Raspberry 
 
 > For recent news check out our [Blog](https://blog.zhaw.ch/high-performance/).
 
+## Table of contents
+
+[Setup RaspberryPi 4 for FDP-LinkIII_Raspberry_HW](#setup-raspberrypi-4-for-fdp-linkiii_raspberry_hw): Instructions to get the FDP-LinkIII Raspberry Hardware running on a RaspberryPi 4 by using our precompiled module.
+
+[Insert Driver into your Linux Sources](#insert-driver-into-your-linux-sources): Instructions on how to get the driver into your custom linux sources.
+
 ## Setup RaspberryPi 4 for FDP-LinkIII_Raspberry_HW
 
 This section gives instructions to setup a RaspberryPi 4 to use the hardware developed in: https://github.com/InES-HPMM/FPD-LinkIII_Raspberry_HW. 
@@ -41,13 +47,12 @@ sudo reboot
 
 ### Add Driver Sources to RaspberryPi
 
-Download `ds90ub954.dtbo`, `ds90ub954.ko`, `imx219.ko` from this repos release onto the RaspberryPi. In the terminal go to the folder with the three downloaded files and copy them to the correct destinations:
+Download `ds90ub954.dtbo` and `ds90ub954.ko` from this release [Release 5.4.51-v7l](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/releases/tag/raspi-5.4.51-v7l%2B) onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
 
 ```bash
 //sudo chmod 777 ds90ub954.dtbo
 sudo cp ds90ub954.dtbo /boot/overlays/.
 sudo cp ds90ub954.ko /lib/modules/`uname -r`/kernel/drivers/media/i2c/.
-//sudo cp imx219.ko /lib/modules/`uname -r`/kernel/drivers/media/i2c/.
 ```
 
 Get ds90ub954.ko to start at boot by opening `/etc/modules`:
@@ -94,10 +99,12 @@ If the module was successfully loaded, you should find a video0 device in the `/
 ls /dev/video0
 ```
 
-If the command returns `No such file or directory` then you must reload the imx219 module:
+If the command returns `No such file or directory` then the loading of the imx219 module failed. This can happen when the imx219 sensor model is loaded before the ds90ub954 module has finished setting up the i2c channel. 
+
+This problem can be solved by reloading the imx219 module:
 
 ```
-sudo rmmod imx219
+sudo modprobe -r imx219
 sudo modprobe imx219
 ```
 
@@ -139,7 +146,7 @@ Run libcamera's qcam:
 
 
 ## Insert Driver into your Linux Sources
-The driver can be used in different linux kernels and for different hardware setups. We have tested the driver on the RaspberryPi 4, Nvidia Jetson Nano and Nvidia Jetson Xavier. In order to adapt the driver to different hardware setups, the driver provides device tree parameters to set the number of csi lanes, lane speed, gpio control and more. A detailed description can be found in the file `ti,ds90ub954.txt`.
+The driver can be used in different linux kernels and for different hardware setups. We have tested the driver on the RaspberryPi 4 and on a Nvidia Jetson Nano. In order to adapt the driver to different hardware setups, the driver provides device tree parameters to set the number of csi lanes, lane speed, gpio control and more. A detailed description can be found in the file [ti,ds90ub954.txt](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/blob/master/ti%2Cds90ub954.txt).
 
 ### Insert Driver into Kernel Sources with Git Subtree
 

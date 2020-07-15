@@ -1,6 +1,8 @@
 # FPD-LinkIII_ds90ub95x
 This repository contains an FDP Link III driver for ds90ub954 (deserializer) and ds90ub953 (serializer) from Texas Instruments. The driver was tested on a Jetson Nano (Jetpack 4.4) and on a RaspberryPi 4.
 
+---
+
 [![logo](https://github.com/InES-HPMM/FPD-LinkIII_Raspberry_HW/blob/master/images/ines_logo.png)](https://www.zhaw.ch/en/engineering/institutes-centres/ines/ "Homepage")
 
 __The group High Performance Multimedia from the Institute of Embedded Systems associated with ZHAW School of Engineering proudly presents an open source driver for TI devices DS90UB954 paired with DS90UB953.__
@@ -16,11 +18,13 @@ __Additionally we made a TI FPD-Link III hardware compatible with the Raspberry 
 
 [Insert Driver into your Linux Sources](#insert-driver-into-your-linux-sources): Instructions on how to get the driver into your custom linux sources.
 
+---
+
 ## Setup RaspberryPi 4 for FDP-LinkIII_Raspberry_HW
 
 This section gives instructions to setup a RaspberryPi 4 to use the hardware developed in: https://github.com/InES-HPMM/FPD-LinkIII_Raspberry_HW. 
 
-The raspian operating system comes with programs such as raspistill, raspivid and so forth which enables the user to record pictures/videos with the RaspberryPi Camera v2.1 (imx219). But when adding the FPD-Link III driver to the device tree, these programs will no longer work. An alternative way to get images from the camera is by using libcamera (<https://libcamera.org/)>. Libcamera is developed for the linux kernel 5. For this reason, these instructions will use the kernel version 5.4.51.
+The raspian operating system comes with programs such as raspistill, raspivid and so forth which enables the user to record pictures/videos with the RaspberryPi Camera v2.1 (imx219). But when adding the FPD-Link III driver to the device tree, these programs will no longer work. An alternative way to get images from the camera is by using libcamera (<https://libcamera.org/>). Libcamera is developed for the linux kernel 5. For this reason, these instructions will use the kernel version 5.4.51.
 
 ### Setup SD card
 Setup an SD card for the RaspberryPi. The easiest way is to install the Imager software from the official RaspberryPi sources: https://www.raspberrypi.org/downloads/. Run Imager and choose the Operating System **Raspberry Pi OS (32-bit)**, choose your SD card and then press **Write**.
@@ -144,6 +148,7 @@ Run libcamera's qcam:
 ./build/src/qcam/qcam
 ```
 
+---
 
 ## Insert Driver into your Linux Sources
 The driver can be used in different linux kernels and for different hardware setups. We have tested the driver on the RaspberryPi 4 and on a Nvidia Jetson Nano. In order to adapt the driver to different hardware setups, the driver provides device tree parameters to set the number of csi lanes, lane speed, gpio control and more. A detailed description can be found in the file [ti,ds90ub954.txt](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/blob/master/ti%2Cds90ub954.txt).

@@ -108,26 +108,36 @@ the serializer. If so, it replaces the alias address by the corresponding slave
 address in the pair and forwards it over FPD-Link III. If i2c-pass-through-all 
 is disabled, only messages addressed to an alias address will be passed through.
 It is possible to define up to 8 slave address/alias address pairs for each 
-serializer.
+serializer. 
+
+In the following example, we set two alias address-pairs for serializer0 and 
+one alias address-pair for serializer1.
+
+The example alias pairs for serializer0 are: 
+{0x10 (actual i2c address of device), 0x20 (alias)}
+{0x11 (actual i2c address of device), 0x21 (alias)}
+
+The example alias pair for serializer1 is: 
+{0x10 (actual i2c address of device), 0x22 (alias)}
 
 1) Set list-cells to the number of address pairs for each serializer:
 (this has to be set in the deserializer node)
 
 serializer0:
-- i2c_address_s0: num-alias-pairs {list-cells = <X>;}
+- i2c_address_s0: num-alias-pairs {list-cells = <2>;}
 
 serializer1:
-- i2c_address_s1: num-alias-pairs {list-cells = <Y>;}
+- i2c_address_s1: num-alias-pairs {list-cells = <1>;}
 
 2) Define the slave addresses and alias addresses for each serializer:
 
 serializer0:
-- i2c-slave = <&i2c_address_s0 0x10 0x11 ...>;
-- slave-alias = <&i2c_address_s0 0x20 0x21 ...>;
+- i2c-slave = <&i2c_address_s0 0x10 0x11>;
+- slave-alias = <&i2c_address_s0 0x20 0x21>;
 
 serializer1:
-- i2c-slave = <&i2c_address_s1 0x10 0x11 ...>;
-- slave-alias = <&i2c_address_s1 0x20 0x21 ...>;
+- i2c-slave = <&i2c_address_s1 0x10>;
+- slave-alias = <&i2c_address_s1 0x22>;
 
 /*------------------------------------------------------------------------------
 * ------------------------------------------------------------------------------

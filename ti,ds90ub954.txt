@@ -15,7 +15,8 @@ In the device tree, the serializer nodes are subnodes of the deserializer.
 Integer values:
 - reg:                  I2C address of deserializer
 - csi-lane-count        Number of CSI lanes             default value: 4
-- csi-lane-speed        CSI lane speed in Mbps          default vaule: 1600
+- csi-lane-speed        CSI lane speed in Mbps (400, 800 or 1600)
+                                                        default vaule: 1600
 - pdb-gpio              Power-down inverted input pin   ignored if not set
 - pass-gpio             Pass output gpio                ignored if not set
 - lock-gpio             Lock output gpio                ignored if not set

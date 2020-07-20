@@ -418,10 +418,10 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 	*  11 : 400 Mbps serial rate */
 	switch(priv->csi_lane_speed) {
 	case 400:
-		val=0x11;
+		val=0x3;
 		break;
 	case 800:
-		val=0x10;
+		val=0x2;
 		break;
 	default:
 		val=0x0;

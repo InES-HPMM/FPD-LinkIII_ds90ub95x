@@ -25,7 +25,9 @@
 
 #include <linux/i2c.h>
 
-// deserializer TI954 registers
+/*------------------------------------------------------------------------------
+ * Deserializer registers
+ *----------------------------------------------------------------------------*/
 #define TI954_REG_I2C_DEV_ID 0x00
 #define TI954_DES_ID         0
 #define TI954_DEVICE_ID      1
@@ -152,8 +154,6 @@
 #define TI954_GPIO6_OUT_VAL     1
 #define TI954_GPIO6_OUT_SRC     2
 #define TI954_GPIO6_OUT_SEL     5
-
-#define TI954_REG_CSI_PLL_CTL 0x1f
 
 #define TI954_REG_RESERVED    0x17
 
@@ -781,9 +781,9 @@
 
 /* IA test and debug registers not now defined */
 
-
-
-// serializer registers
+/*------------------------------------------------------------------------------
+ * Serializer registers
+ *----------------------------------------------------------------------------*/
 #define TI953_REG_I2C_DEV_ID  0x00
 #define TI953_SER_ID_OVERRIDE 0
 #define TI953_DEVICE_ID       1
@@ -1119,9 +1119,7 @@
 #define TI953_RX_ID_LENGTH    6
 
 /*------------------------------------------------------------------------------
- *
  * DEFINES
- *
  *----------------------------------------------------------------------------*/
 // GPIO
 #define CAM_ENABLE 0x01   /* Assumes bit 0 of GPIO is connected to CAM_ENABLE */

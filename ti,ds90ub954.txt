@@ -46,6 +46,22 @@ Boolean:
 - test-pattern          Enables test pattern
 - i2c-pass-through-all  Enable all i2c messages to be forwarded over FPD-Link III
 
+
+/*------------------------------------------------------------------------------
+* Virtual-channel mapping
+*-----------------------------------------------------------------------------*/
+CSI-2 Virtual Channel Mapping Register: This register provides a method for 
+replacing the Virtual Channel Identifier (VC-ID) of incoming CSI packets. VC-IDs
+0-3 are allowed IDs.
+
+- virtual-channel-map   [7:6] : Map value for VC-ID of 3    default value: 0xE4
+                        [5:4] : Map value for VC-ID of 2
+                        [3:2] : Map value for VC-ID of 1
+                        [1:0] : Map value for VC-ID of 0
+
+The default value 0xE4 (= 0b 11 10 01 00) maps VC-ID 0 to ID 0, VC-ID 1 to 1,
+VC-ID 2 to 2 and VC-ID 3 to 3.
+
 /*------------------------------------------------------------------------------
 * Serializer GPIOs
 *-----------------------------------------------------------------------------*/
@@ -216,6 +232,8 @@ fpdlink: ds90ub954@30 {
             csi-lane-count = <2>;
             continuous-clock;
 
+            virtual-channel-map = 0x0;
+
             gpio0-output-enable = <1>;
             gpio0-control = <0x9>;
 
@@ -232,6 +250,8 @@ fpdlink: ds90ub954@30 {
             i2c-pass-through-all;
             test-pattern;
 
+            virtual-channel-map = 0x55;
+
             gpio0-output-enable = <1>;
             gpio0-control = <0x9>;
 
@@ -240,4 +260,3 @@ fpdlink: ds90ub954@30 {
         };
     };
 };
-

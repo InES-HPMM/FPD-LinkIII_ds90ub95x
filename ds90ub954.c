@@ -169,6 +169,7 @@ write_rx_port_err:
 	return err;
 }
 
+#ifdef DEBUG
 static int ds90ub954_read_rx_port(struct ds90ub954_priv *priv, int rx_port,
 				  int addr, int *val)
 {
@@ -212,7 +213,6 @@ read_rx_port_err:
 	return err;
 }
 
-#ifdef DEBUG
 static int ds90ub954_read_ia_reg(struct ds90ub954_priv *priv, int reg, int *val,
 				 int ia_config)
 {
@@ -572,12 +572,6 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 		}
 #endif
 		/* setup i2c forwarding */
-		err = ds90ub954_read_rx_port(priv, rx_port, TI954_REG_SER_ID, &val);
-		if(unlikely(err))
-			goto ser_init_failed;
-		dev_info(dev, "%s: SERIALIZER ID is: 0x%02x\n", __func__,
-			 (val>>TI954_SER_ID));
-
 		err = ds90ub954_write_rx_port(priv, rx_port, TI954_REG_SER_ALIAS_ID,
 				(ds90ub953->i2c_address<<TI954_SER_ALIAS_ID));
 		if(unlikely(err))
@@ -629,14 +623,32 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 			dev_info(dev, "%s: alias id %i: 0x%X", __func__, i, val);
 		}
 
-		dev_info(dev, "%s: init of serializer rx_port %i successful",
+		/* set virtual channel id mapping */
+		err = ds90ub954_write_rx_port(priv, rx_port,
+					      TI954_REG_CSI_VC_MAP,
+					      ds90ub953->vc_map);
+		if(unlikely(err))
+			goto ser_init_failed;
+		else {
+			val = ds90ub953->vc_map & 0b11;
+			dev_info(dev, "%s: VC-ID 0 mapped to %i", __func__,val);
+			val = ((ds90ub953->vc_map & 0b1100)>>2);
+			dev_info(dev, "%s: VC-ID 1 mapped to %i", __func__,val);
+			val = ((ds90ub953->vc_map & 0b110000)>>4);
+			dev_info(dev, "%s: VC-ID 2 mapped to %i", __func__,val);
+			val = ((ds90ub953->vc_map & 0b11000000)>>6);
+			dev_info(dev, "%s: VC-ID 3 mapped to %i", __func__,val);
+		}
+
+		/* all rx_port specific registers set for rx_port X */
+		dev_info(dev, "%s: init of deserializer rx_port %i successful",
 			 __func__, rx_port);
 		dev_info(dev," ");
 		continue;
 ser_init_failed:
-		dev_err(dev, "%s: init serializer rx_port %i failed",
+		dev_err(dev, "%s: init deserializer rx_port %i failed",
 			__func__, rx_port);
-		dev_err(dev, "%s: serializer rx_port %i is deactivated",
+		dev_err(dev, "%s: deserializer rx_port %i is deactivated",
 			__func__, rx_port);
 		dev_err(dev," ");
 
@@ -1561,6 +1573,20 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 			ds90ub953->i2c_pt = 0;
 			dev_info(dev, "%s: - i2c-pass-through-all disabled\n",
 				 __func__);
+		}
+
+		err = of_property_read_u32(ser, "virtual-channel-map", &val);
+		if(err) {
+			dev_info(dev, "%s: - virtual-channel-map property not found\n",
+				 __func__);
+			/* default value: 0xE4 */
+			ds90ub953->vc_map = 0xE4;
+			dev_info(dev, "%s: - virtual-channel-map set to default val: 0xE4\n",
+				 __func__);
+		} else {
+			/* set vc_map*/
+			ds90ub953->vc_map = val;
+			dev_info(dev, "%s: - virtual-channel-map 0x%x\n", __func__, val);
 		}
 
 		/* all initialization of this serializer complete */

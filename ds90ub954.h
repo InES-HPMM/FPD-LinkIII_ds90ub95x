@@ -1172,10 +1172,12 @@ struct ds90ub953_priv {
 	int gpio2_oc; // gpio2_output_control
 	int gpio3_oc; // gpio3_output_control
 
-	//reference output clock control parameters
+	/* reference output clock control parameters */
 	int hs_clk_div;
 	int div_m_val;
 	int div_n_val;
+
+	int vc_map; // virtual channel mapping
 };
 
 

@@ -631,13 +631,13 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 			goto ser_init_failed;
 		else {
 			val = ds90ub953->vc_map & 0b11;
-			dev_info(dev, "%s: VC-ID 0 mapped to %i", __func__,val);
+			dev_info(dev, "%s: VC-ID 0 mapped to %i\n", __func__, val);
 			val = ((ds90ub953->vc_map & 0b1100)>>2);
-			dev_info(dev, "%s: VC-ID 1 mapped to %i", __func__,val);
+			dev_info(dev, "%s: VC-ID 1 mapped to %i\n", __func__, val);
 			val = ((ds90ub953->vc_map & 0b110000)>>4);
-			dev_info(dev, "%s: VC-ID 2 mapped to %i", __func__,val);
+			dev_info(dev, "%s: VC-ID 2 mapped to %i\n", __func__, val);
 			val = ((ds90ub953->vc_map & 0b11000000)>>6);
-			dev_info(dev, "%s: VC-ID 3 mapped to %i", __func__,val);
+			dev_info(dev, "%s: VC-ID 3 mapped to %i\n", __func__, val);
 		}
 
 		/* all rx_port specific registers set for rx_port X */

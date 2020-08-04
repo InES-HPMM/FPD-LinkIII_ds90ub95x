@@ -641,7 +641,7 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 		}
 
 		/* all rx_port specific registers set for rx_port X */
-		dev_info(dev, "%s: init of deserializer rx_port %i successful",
+		dev_info(dev, "%s: init of deserializer rx_port %i successful\n",
 			 __func__, rx_port);
 		dev_info(dev," ");
 		continue;

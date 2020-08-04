@@ -298,7 +298,7 @@ static int ds90ub954_debug_prints(struct ds90ub954_priv *priv)
 {
 	int i, val, ia_config = 0, err = 0;
 	/* print CSI timing of tx port 0 */
-	dev_info(dev, "%s: CSI timing", __func__);
+	dev_info(dev, "%s: CSI timing\n", __func__);
 	err = ds90ub954_read_ia_reg(priv, TI954_REG_IA_CSI0_TCK_PREP, &val,
 					ia_config);
 	if(unlikely(err))
@@ -378,7 +378,7 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 	/*----------------------------------------------------------------------
 	 *  init deserializer
 	 *--------------------------------------------------------------------*/
-	dev_info(dev, "%s starting", __func__);
+	dev_info(dev, "%s starting\n", __func__);
 
 	/* Read device id of deserializer */
 	err = ds90ub954_read(priv, TI954_REG_I2C_DEV_ID, &val);
@@ -465,7 +465,7 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 
 	/* check if test pattern should be turned on */
 	if(priv->test_pattern == 1) {
-		dev_info(dev, "%s: deserializer init testpattern", __func__);
+		dev_info(dev, "%s: deserializer init testpattern\n", __func__);
 		err = ds90ub954_init_testpattern(priv);
 		if(unlikely(err)) {
 			dev_info(dev,
@@ -479,7 +479,6 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 	err = ds90ub954_write(priv, TI954_REG_RX_PORT_CTL, val);
 	if(unlikely(err))
 		goto init_err;
-	dev_info(dev," ");
 
 	/* for loop goes through each serializer */
 	for( ; ser_nr < priv->num_ser; ser_nr++) {
@@ -489,7 +488,7 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 		}
 		rx_port = ds90ub953->rx_channel;
 
-		dev_info(dev, "%s: start init of serializer rx_port %i",
+		dev_info(dev, "%s: start init of serializer rx_port %i\n",
 			 __func__, rx_port);
 
 		/* Get TI954_REG_RX_PORT_CTL and enable receiver rx_port */
@@ -609,7 +608,7 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 						      (val<<TI954_ALIAS_ID0));
 			if(unlikely(err))
 				goto ser_init_failed;
-			dev_info(dev, "%s: slave id %i: 0x%X", __func__, i, val);
+			dev_info(dev, "%s: slave id %i: 0x%X\n", __func__, i, val);
 
 			val = ds90ub953->i2c_alias[i];
 			if(val == 0) {
@@ -649,7 +648,6 @@ ser_init_failed:
 			__func__, rx_port);
 		dev_err(dev, "%s: deserializer rx_port %i is deactivated\n",
 			__func__, rx_port);
-		dev_err(dev," ");
 
 		ds90ub953->initialized = 0;
 
@@ -804,7 +802,7 @@ static int ds90ub954_parse_dt(struct ds90ub954_priv *priv)
 	if(!np)
 		return -ENODEV;
 
-	dev_info(dev, "%s: deserializer:", __func__);
+	dev_info(dev, "%s: deserializer:\n", __func__);
 	match = of_match_device(ds90ub954_of_match, dev);
 	if(!match) {
 		dev_err(dev, "Failed to find matching dt id\n");
@@ -888,7 +886,6 @@ static int ds90ub954_parse_dt(struct ds90ub954_priv *priv)
 		dev_info(dev, "%s: - discontinuous clock used\n", __func__);
 	}
 
-	dev_info(dev, " ");
 	return 0;
 
 }
@@ -1046,7 +1043,7 @@ static int ds90ub953_init(struct ds90ub953_priv *priv)
 	int err = 0;
 	char id_code[TI953_RX_ID_LENGTH + 1];
 
-	dev_info(dev, "%s: start", __func__);
+	dev_info(dev, "%s: start\n", __func__);
 
 	err = ds90ub953_read(priv, TI953_REG_I2C_DEV_ID, &val);
 	if(unlikely(err))
@@ -1137,7 +1134,7 @@ static int ds90ub953_init(struct ds90ub953_priv *priv)
 
 	/* check if test pattern should be turned on*/
 	if(priv->test_pattern == 1) {
-		dev_info(dev,"%s: serializer rx_port %i init testpattern",
+		dev_info(dev,"%s: serializer rx_port %i init testpattern\n",
 			 __func__, priv->rx_channel);
 		err = ds90ub953_init_testpattern(priv);
 		if(unlikely(err))
@@ -1154,7 +1151,7 @@ static int ds90ub953_init(struct ds90ub953_priv *priv)
 		dev_err(dev, "serializer %i cant create device attribute %s\n",
 			priv->rx_channel, dev_attr_test_pattern_ser.attr.name);
 #endif
-	dev_info(dev, "%s: successful", __func__);
+	dev_info(dev, "%s: successful\n", __func__);
 
 init_err:
 	return err;
@@ -1248,8 +1245,7 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 		return 0;
 	}
 
-	dev_info(dev, "%s: parsing device tree \n", __func__);
-	dev_info(dev, "%s: serializers: ", __func__);
+	dev_info(dev, "%s: parsing serializers device tree:\n", __func__);
 
 	/* go through all serializers in list */
 	for_each_child_of_node(sers, ser) {
@@ -1540,13 +1536,13 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 				 __func__);
 			ds90ub953->i2c_alias_num = 0;
 		} else {
-			dev_info(dev, "%s: - num of slave alias pairs: %i ",
+			dev_info(dev, "%s: - num of slave alias pairs: %i\n",
 				 __func__, i2c_addresses.args_count);
 			/* writting i2c alias addresses into array*/
 			for(i=0; (i<i2c_addresses.args_count) && (i<NUM_ALIAS);
 			    i++) {
 				ds90ub953->i2c_alias[i] = i2c_addresses.args[i];
-				dev_info(dev, "%s: - slave addr: 0x%X, alias addr: 0x%X",
+				dev_info(dev, "%s: - slave addr: 0x%X, alias addr: 0x%X\n",
 					 __func__, ds90ub953->i2c_slave[i],
 					 ds90ub953->i2c_alias[i]);
 			}
@@ -1590,13 +1586,12 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 		/* all initialization of this serializer complete */
 		ds90ub953->initialized = 1;
 		priv->num_ser += 1;
-		dev_info(dev, "%s: serializer %i successfully parsed", __func__,
+		dev_info(dev, "%s: serializer %i successfully parsed\n", __func__,
 			 counter);
 next:
 		counter +=1;
 	}
-	dev_info(dev, "%s: done", __func__);
-	dev_info(dev," ");
+	dev_info(dev, "%s: done\n", __func__);
 	return 0;
 
 }
@@ -1613,7 +1608,7 @@ static int ds90ub954_probe(struct i2c_client *client,
 	int err;
 	int i = 0;
 
-	dev_info(dev, "%s: start", __func__);
+	dev_info(dev, "%s: start\n", __func__);
 
 	priv = devm_kzalloc(dev, sizeof(struct ds90ub954_priv), GFP_KERNEL);
 	if(!priv)
@@ -1661,7 +1656,6 @@ static int ds90ub954_probe(struct i2c_client *client,
 		goto err_regmap;
 	}
 	dev_info(dev, "%s: init ds90ub954_done\n", __func__);
-	dev_info(dev, " ");
 
 	msleep(500);
 

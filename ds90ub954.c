@@ -620,7 +620,7 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 						      (val<<TI954_ALIAS_ID0));
 			if(unlikely(err))
 				goto ser_init_failed;
-			dev_info(dev, "%s: alias id %i: 0x%X", __func__, i, val);
+			dev_info(dev, "%s: alias id %i: 0x%X\n", __func__, i, val);
 		}
 
 		/* set virtual channel id mapping */
@@ -643,12 +643,11 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 		/* all rx_port specific registers set for rx_port X */
 		dev_info(dev, "%s: init of deserializer rx_port %i successful\n",
 			 __func__, rx_port);
-		dev_info(dev," ");
 		continue;
 ser_init_failed:
-		dev_err(dev, "%s: init deserializer rx_port %i failed",
+		dev_err(dev, "%s: init deserializer rx_port %i failed\n",
 			__func__, rx_port);
-		dev_err(dev, "%s: deserializer rx_port %i is deactivated",
+		dev_err(dev, "%s: deserializer rx_port %i is deactivated\n",
 			__func__, rx_port);
 		dev_err(dev," ");
 
@@ -1579,7 +1578,6 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 		if(err) {
 			dev_info(dev, "%s: - virtual-channel-map property not found\n",
 				 __func__);
-			/* default value: 0xE4 */
 			ds90ub953->vc_map = 0xE4;
 			dev_info(dev, "%s: - virtual-channel-map set to default val: 0xE4\n",
 				 __func__);

@@ -232,7 +232,7 @@ fpdlink: ds90ub954@30 {
             csi-lane-count = <2>;
             continuous-clock;
 
-            virtual-channel-map = 0x0;
+            virtual-channel-map = <0x0>;
 
             gpio0-output-enable = <1>;
             gpio0-control = <0x9>;
@@ -250,7 +250,7 @@ fpdlink: ds90ub954@30 {
             i2c-pass-through-all;
             test-pattern;
 
-            virtual-channel-map = 0x55;
+            virtual-channel-map = <0x55>;
 
             gpio0-output-enable = <1>;
             gpio0-control = <0x9>;

@@ -852,7 +852,10 @@
 
 #define TI953_REG_LOCAL_GPIO_DATA 0x0d
 #define TI953_GPIO_OUT_SRC        0
-#define TI953_GPIO_RMTEN          4
+#define TI953_GPIO0_RMTEN         4
+#define TI953_GPIO1_RMTEN         5
+#define TI953_GPIO2_RMTEN         6
+#define TI953_GPIO3_RMTEN         7
 
 #define TI953_REG_GPIO_CTRL  0x0e
 #define TI953_GPIO0_INPUT_EN 0
@@ -1146,6 +1149,15 @@
 #define NUM_SERIALIZER 2
 #define NUM_ALIAS 8
 
+/*
+ * I2C mode can be overridden or left as strapped.
+ */
+enum i2c_strap_mode {
+	STRAP_MODE_OVERRIDE_3V3,
+	STRAP_MODE_OVERRIDE_1V8,
+	STRAP_MODE_NO_OVERRIDE,
+};
+
 struct ds90ub953_priv {
 	struct i2c_client *client;
 	struct regmap *regmap;
@@ -1159,6 +1171,7 @@ struct ds90ub953_priv {
 	int i2c_alias[NUM_ALIAS]; // array with the i2c alias addresses
 	int conts_clk; // continuous clock (0: discontinuous, 1: continuous)
 	int i2c_pt; // i2c-pass-through-all
+	enum i2c_strap_mode i2c_strap_mode; 
 
 	int initialized;
 

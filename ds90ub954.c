@@ -365,6 +365,64 @@ static int ds90ub954_debug_prints(struct ds90ub954_priv *priv)
 };
 #endif
 
+static int ds90ub954_setup_gpio_forwarding(struct ds90ub954_priv *priv, struct ds90ub953_priv *ds90ub953, int rx_port, int gpio, unsigned int *val)
+{
+	int output_enable;
+	int output_control;
+	int err = 0;
+
+	switch (gpio) {
+		case 0:
+			output_enable = ds90ub953->gpio0_oe;
+			output_control = ds90ub953->gpio0_oc;
+			break;
+		case 1:
+			output_enable = ds90ub953->gpio1_oe;
+			output_control = ds90ub953->gpio1_oc;
+			break;
+		case 2:
+			output_enable = ds90ub953->gpio2_oe;
+			output_control = ds90ub953->gpio2_oc;
+			break;
+		case 3:
+			output_enable = ds90ub953->gpio3_oe;
+			output_control = ds90ub953->gpio3_oc;
+			break;
+		default:
+			return err;
+	}
+
+	if ((0 <= output_control) && (6 >= output_control)) {
+		if (!output_enable)
+			*val &= ~(1UL << output_control);
+		dev_info(&priv->client->dev, "output_enable: %d, gpio: %d, rx_port: %d, val: 0x%02X", output_enable, gpio, rx_port, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+		switch (output_control) {
+			case 0:
+				err = ds90ub954_write(priv, TI954_REG_GPIO0_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+			case 1:
+				err = ds90ub954_write(priv, TI954_REG_GPIO1_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+			case 2:
+				err = ds90ub954_write(priv, TI954_REG_GPIO2_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+			case 3:
+				err = ds90ub954_write(priv, TI954_REG_GPIO3_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+			case 4:
+				err = ds90ub954_write(priv, TI954_REG_GPIO4_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+			case 5:
+				err = ds90ub954_write(priv, TI954_REG_GPIO5_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+			case 6:
+				err = ds90ub954_write(priv, TI954_REG_GPIO6_PIN_CTL, output_enable ? 0 : (gpio << 5) | (rx_port << 2) | 0x01);
+				break;
+		}
+	}
+	return err;
+}
+
 static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 {
 	struct device *dev = &priv->client->dev;
@@ -478,6 +536,44 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 	val = 0b00111100;
 	err = ds90ub954_write(priv, TI954_REG_RX_PORT_CTL, val);
 	if(unlikely(err))
+		goto init_err;
+
+	/* setup gpio forwarding, default all input, overriden later */
+	err = ds90ub954_write(priv, TI954_REG_GPIO_INPUT_CTL,
+				(1<<TI954_GPIO6_INPUT_EN)|
+				(1<<TI954_GPIO5_INPUT_EN)|
+				(1<<TI954_GPIO4_INPUT_EN)|
+				(1<<TI954_GPIO3_INPUT_EN)|
+				(1<<TI954_GPIO2_INPUT_EN)|
+				(1<<TI954_GPIO1_INPUT_EN)|
+				(1<<TI954_GPIO0_INPUT_EN));
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO0_PIN_CTL, 0);
+	if(err)
+		goto init_err;
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO1_PIN_CTL, 0);
+	if(err)
+		goto init_err;
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO2_PIN_CTL, 0);
+	if(err)
+		goto init_err;
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO3_PIN_CTL, 0);
+	if(err)
+		goto init_err;
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO4_PIN_CTL, 0);
+	if(err)
+		goto init_err;
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO5_PIN_CTL, 0);
+	if(err)
+		goto init_err;
+
+	err = ds90ub954_write(priv, TI954_REG_GPIO6_PIN_CTL, 0);
+	if(err)
 		goto init_err;
 
 	/* for loop goes through each serializer */
@@ -597,6 +693,19 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 			dev_info(dev, "%s: Successfully set TI954_REG_BC_GPIO_CTL1\n",
 				 __func__);
 
+		/* setup gpio forwarding */
+		err = ds90ub954_read(priv, TI954_REG_GPIO_INPUT_CTL, &val);
+		if(err)
+			goto ser_init_failed;
+		for (i=0; i<4; i++) {
+			err = ds90ub954_setup_gpio_forwarding(priv, ds90ub953, rx_port, i, &val);
+			if(err)
+				goto ser_init_failed;
+		}
+		err = ds90ub954_write(priv, TI954_REG_GPIO_INPUT_CTL, val);
+		if(err)
+			goto ser_init_failed;
+
 		/* set i2c slave ids and aliases */
 		for(i=0; (i < ds90ub953->i2c_alias_num) && (i < NUM_ALIAS); i++) {
 			val = ds90ub953->i2c_slave[i];
@@ -669,46 +778,6 @@ ser_init_failed:
 			continue;
 		continue;
 	}
-
-	/* setup gpio forwarding, default all input */
-	err = ds90ub954_write(priv, TI954_REG_GPIO_INPUT_CTL,
-			      (1<<TI954_GPIO6_INPUT_EN)|
-			      (1<<TI954_GPIO5_INPUT_EN)|
-			      (1<<TI954_GPIO4_INPUT_EN)|
-			      (1<<TI954_GPIO3_INPUT_EN)|
-			      (1<<TI954_GPIO2_INPUT_EN)|
-			      (1<<TI954_GPIO1_INPUT_EN)|
-			      (1<<TI954_GPIO0_INPUT_EN));
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO0_PIN_CTL, 0);
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO1_PIN_CTL, 0);
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO2_PIN_CTL, 0);
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO3_PIN_CTL, 0);
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO4_PIN_CTL, 0);
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO5_PIN_CTL, 0);
-	if(err)
-		goto init_err;
-
-	err = ds90ub954_write(priv, TI954_REG_GPIO6_PIN_CTL, 0);
-	if(err)
-		goto init_err;
 
 init_err:
 	return err;
@@ -1039,7 +1108,7 @@ static DEVICE_ATTR(test_pattern_ser, 0664, test_pattern_show_ser,
 static int ds90ub953_init(struct ds90ub953_priv *priv)
 {
 	struct device *dev = &priv->client->dev;
-	int val, dev_id, i;
+	int val, dev_id, i, count;
 	int err = 0;
 	char id_code[TI953_RX_ID_LENGTH + 1];
 
@@ -1060,23 +1129,31 @@ static int ds90ub953_init(struct ds90ub953_priv *priv)
 	}
 	dev_info(dev, "%s: device ID: 0x%x, code:%s\n", __func__, dev_id, id_code);
 
+	err = ds90ub953_read(priv, TI953_REG_GENERAL_CFG, &val);
+	if(unlikely(err))
+		goto init_err;
+
 	 /* set to csi lanes */
 	switch(priv->csi_lane_count) {
 	case 1:
-		val = TI953_CSI_LANE_SEL1;
+		count = TI953_CSI_LANE_SEL1;
 		break;
 	case 2:
-		val = TI953_CSI_LANE_SEL2;
+		count = TI953_CSI_LANE_SEL2;
 		break;
 	default:
-		val = TI953_CSI_LANE_SEL4;
+		count = TI953_CSI_LANE_SEL4;
 		break;
 	}
-	err = ds90ub953_write(priv, TI953_REG_GENERAL_CFG,
-			      (1<<TI953_I2C_STRAP_MODE) |
-			      (1<<TI953_CRC_TX_GEN_ENABLE) |
-			      (val<<TI953_CSI_LANE_SEL) |
-			      (priv->conts_clk<<TI953_CONTS_CLK));
+
+	val &= 0x01;
+	if (priv->i2c_strap_mode != STRAP_MODE_NO_OVERRIDE)
+		val |= ((priv->i2c_strap_mode&0x1)<<TI953_I2C_STRAP_MODE);
+	val |= (1<<TI953_CRC_TX_GEN_ENABLE);
+	val |= ((count&0x3)<<TI953_CSI_LANE_SEL);
+	val |= ((priv->conts_clk&0x1)<<TI953_CONTS_CLK);
+
+	err = ds90ub953_write(priv, TI953_REG_GENERAL_CFG, val);
 	if(unlikely(err))
 		goto init_err;
 
@@ -1122,7 +1199,25 @@ static int ds90ub953_init(struct ds90ub953_priv *priv)
 		goto init_err;
 
 	err = ds90ub953_write(priv, TI953_REG_LOCAL_GPIO_DATA,
-			      (0xf<<TI953_GPIO_RMTEN));
+			      (priv->gpio0_oe<<TI953_GPIO0_RMTEN)|
+			      (priv->gpio1_oe<<TI953_GPIO1_RMTEN)|
+			      (priv->gpio2_oe<<TI953_GPIO2_RMTEN)|
+			      (priv->gpio3_oe<<TI953_GPIO3_RMTEN));
+	if(unlikely(err))
+		goto init_err;
+
+	if (!priv->gpio2_oe || !priv->gpio3_oe) {
+		val = 3;
+	} else if (!priv->gpio1_oe) {
+		val = 2;
+	} else if (!priv->gpio0_oe) {
+		val = 1;
+	} else  {
+		val = 0;
+	}
+	err = ds90ub953_write(priv, TI953_REG_DATAPATH_CTL1,
+			      (1<<TI953_DCA_CRC_EN)|
+			      (val<<TI953_FC_GPIO_EN));
 	if(unlikely(err))
 		goto init_err;
 
@@ -1235,6 +1330,7 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 	u32 val = 0;
 	int err = 0;
 	int counter = 0;
+	const char *strap_mode;
 	priv->num_ser = 0;
 
 	/* get serializers device_node from dt */
@@ -1574,6 +1670,26 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 			ds90ub953->i2c_pt = 0;
 			dev_info(dev, "%s: - i2c-pass-through-all disabled\n",
 				 __func__);
+		}
+
+		err = of_property_read_string(ser, "i2c-strap-mode", &strap_mode);
+		if(err >= 0) {
+			if (!strncmp("strapped", strap_mode, 8))
+				ds90ub953->i2c_strap_mode = STRAP_MODE_NO_OVERRIDE;
+			else if (!strncmp("3v3", strap_mode, 3))
+				ds90ub953->i2c_strap_mode = STRAP_MODE_OVERRIDE_3V3;
+			else if (!strncmp("1v8", strap_mode, 3))
+				ds90ub953->i2c_strap_mode = STRAP_MODE_OVERRIDE_1V8;
+			else {
+				dev_warn(dev, "Unknown i2c strap mode '%s'\n", strap_mode);
+				ds90ub953->i2c_strap_mode = STRAP_MODE_NO_OVERRIDE;
+			}
+		} else {
+			dev_info(dev, "%s: - i2c-strap-mode property not found\n",
+				 __func__);
+			/* default value: STRAP_MODE_NO_OVERRIDE */
+			ds90ub953->i2c_strap_mode = STRAP_MODE_NO_OVERRIDE;
+			dev_info(dev, "%s: - no i2c strap mode override\n", __func__);
 		}
 
 		err = of_property_read_u32(ser, "virtual-channel-map", &val);

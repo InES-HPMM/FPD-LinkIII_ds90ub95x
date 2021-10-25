@@ -46,6 +46,13 @@ Boolean:
 - test-pattern          Enables test pattern
 - i2c-pass-through-all  Enable all i2c messages to be forwarded over FPD-Link III
 
+String:
+- i2c-strap-mode        Optionally override the I2C voltage level setting from
+                        the strapped IDX pin. No override if not set.
+                        Possible values:
+                        - strapped       leave as strapped
+                        - 3v3            set to 3.3V
+                        - 1v8            set to 1.8V
 
 /*------------------------------------------------------------------------------
 * Virtual-channel mapping
@@ -82,19 +89,16 @@ The following device tree parameters can be used to set the GPIO control:
 
 Possible GPIO control values are:
 
-    0    connects the GPIO to GPIO0 (input) of deserializer
-    1    connects the GPIO to GPIO1 (input) of deserializer
-    2    connects the GPIO to GPIO2 (input) of deserializer
+    0    connects the GPIO to GPIO0 (input/output) of deserializer
+    1    connects the GPIO to GPIO1 (input/output) of deserializer
+    2    connects the GPIO to GPIO2 (input/output) of deserializer
     3    NOT SUPPORTED - connects the GPIO to GPIO3 of deserializer 
-    4    connects the GPIO to GPIO4 (input) of deserializer
-    5    connects the GPIO to GPIO5 (input) of deserializer
-    6    connects the GPIO to GPIO6 (input) of deserializer
+    4    connects the GPIO to GPIO4 (input/output) of deserializer
+    5    connects the GPIO to GPIO5 (input/output) of deserializer
+    6    connects the GPIO to GPIO6 (input/output) of deserializer
     8    output constant value of 0
     9    output constant value of 1
     10   frameSync signal
-
-(Deserializer GPIO's set as output is not supported as device tree option. Driver
-must be edited if the deserializer GPIO's are needed as output.)
 
 /*------------------------------------------------------------------------------
 * Serializer CLK_OUT (in synchronized mode)

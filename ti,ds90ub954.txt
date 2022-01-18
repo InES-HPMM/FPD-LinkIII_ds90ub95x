@@ -40,6 +40,8 @@ Integer values:
 - csi-lane-count        Number of CSI lanes             default value: 4
 - i2c-address           I2C address of serializer       default value: 0x18
                         (this address can be chosen freely)
+- aeq-min               AEQ start value                 default value: 2
+- aeq-max               AEQ max value                   default value: 15
 
 Boolean:
 - continuous-clock      Enables continuous clock

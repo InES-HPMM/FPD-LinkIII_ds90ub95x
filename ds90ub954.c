@@ -587,6 +587,21 @@ static int ds90ub954_init(struct ds90ub954_priv *priv, int rx_port)
 		dev_info(dev, "%s: start init of serializer rx_port %i\n",
 			 __func__, rx_port);
 
+		/* Set AEQ min/max values */
+		err = ds90ub954_write_rx_port(priv, rx_port, TI954_REG_AEQ_MIN_MAX,
+					(ds90ub953->aeq_max<<TI954_AEQ_MAX)|
+					(ds90ub953->aeq_min<<TI954_ADAPTIVE_EQ_FLOOR_VALUE));
+		if(unlikely(err))
+			goto ser_init_failed;
+
+		err = ds90ub954_write_rx_port(priv, rx_port, TI954_REG_AEQ_CTL2,
+					(4<<TI954_ADAPTIVE_EQ_RELOCK_TIME)|
+					(1<<TI954_AEQ_1ST_LOCK_MODE)|
+					(1<<TI954_AEQ_RESTART)|
+					(1<<TI954_SET_AEQ_FLOOR));
+		if(unlikely(err))
+			goto ser_init_failed;
+
 		/* Get TI954_REG_RX_PORT_CTL and enable receiver rx_port */
 		err = ds90ub954_read(priv, TI954_REG_RX_PORT_CTL, &val);
 		if(unlikely(err))
@@ -1398,6 +1413,32 @@ static int ds90ub953_parse_dt(struct i2c_client *client,
 			/* set csi-lane-count*/
 			ds90ub953->csi_lane_count = val;
 			dev_info(dev, "%s: - csi-lane-count %i\n", __func__, val);
+		}
+
+		err = of_property_read_u32(ser, "aeq-min", &val);
+		if(err) {
+			dev_info(dev, "%s: - aeq-min property not found\n", __func__);
+
+			/* default value: 2 */
+			ds90ub953->aeq_min = 2;
+			dev_info(dev, "%s: - aeq-min set to default val: %i\n", __func__, ds90ub953->aeq_min);
+		} else {
+			/* set aeq-min*/
+			ds90ub953->aeq_min = val;
+			dev_info(dev, "%s: - aeq-min %i\n", __func__, val);
+		}
+
+		err = of_property_read_u32(ser, "aeq-max", &val);
+		if(err) {
+			dev_info(dev, "%s: - aeq-max property not found\n", __func__);
+
+			/* default value: 15 */
+			ds90ub953->aeq_max = 15;
+			dev_info(dev, "%s: - aeq-max set to default val: %i\n", __func__, ds90ub953->aeq_max);
+		} else {
+			/* set aeq_max*/
+			ds90ub953->aeq_max = val;
+			dev_info(dev, "%s: - aeq-max %i\n", __func__, val);
 		}
 
 		/* GPIO output enable */

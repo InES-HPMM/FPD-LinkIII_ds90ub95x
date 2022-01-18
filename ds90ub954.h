@@ -1173,6 +1173,9 @@ struct ds90ub953_priv {
 	int i2c_pt; // i2c-pass-through-all
 	enum i2c_strap_mode i2c_strap_mode; 
 
+	int aeq_min;
+	int aeq_max;
+
 	int initialized;
 
 	int gpio0_oe; // gpio0_output_enable

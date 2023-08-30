@@ -51,7 +51,7 @@ sudo reboot
 
 ### Add Driver Sources to RaspberryPi
 
-Download `ds90ub954.dtbo` and `ds90ub954.ko` from this repos release (relase for kernel 6.1.47-v8+) onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
+Download `ds90ub954.dtbo` and `ds90ub954.ko` from this release [6.1.47-v8+](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/releases/tag/raspi-6.1.47-v8%2B) onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
 
 ```bash
 sudo cp ds90ub954.dtbo /boot/overlays/.

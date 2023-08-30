@@ -24,14 +24,14 @@ __Additionally we made a TI FPD-Link III hardware compatible with the Raspberry 
 
 This section gives instructions to setup a RaspberryPi 4 to use the hardware developed in: https://github.com/InES-HPMM/FPD-LinkIII_Raspberry_HW. 
 
-The raspian operating system comes with programs such as raspistill, raspivid and so forth which enables the user to record pictures/videos with the RaspberryPi Camera v2.1 (imx219). But when adding the FPD-Link III driver to the device tree, these programs will no longer work. An alternative way to get images from the camera is by using libcamera (<https://libcamera.org/>). Libcamera is developed for the linux kernel 5. For this reason, these instructions will use the kernel version 5.4.51.
+The raspian operating system comes with programs such as raspistill, raspivid and so forth which enables the user to record pictures/videos with the RaspberryPi Camera v2.1 (imx219). But when adding the FPD-Link III driver to the device tree, these programs will no longer work. An alternative way to get images from the camera is by using libcamera (<https://libcamera.org/>). Some libcamera applications are preinstalled in the kernel version 6.1.47. For this reason, these instructions will use the kernel version 6.1.47.
 
 ### Setup SD card
-Setup an SD card for the RaspberryPi. The easiest way is to install the Imager software from the official RaspberryPi sources: https://www.raspberrypi.org/downloads/. Run Imager and choose the Operating System **Raspberry Pi OS (32-bit)**, choose your SD card and then press **Write**.
+Setup an SD card for the RaspberryPi. The easiest way is to install the Imager software from the official RaspberryPi sources: https://www.raspberrypi.org/downloads/. Run Imager and choose **Raspberry Pi OS (other)** and then the Operating System **Raspberry Pi OS (64-bit)**, choose your SD card and then press **Write**.
 
 Boot your RaspberryPi with the prepared SD card.
 
-### Update to Kernel 5.4
+### Update to Kernel 6.1
 
 Connect the RaspberryPi to the internet (ethernet or wifi). Open a terminal an execute the following commands:
 
@@ -40,10 +40,10 @@ sudo apt update
 sudo apt full-upgrade
 ```
 
-After a reboot, execute:
+After a reboot, execute (if there is an error with an invalid hash, run the first command twice):
 
 ```bash
-sudo rpi-update 8382ece2b30be0beb87cac7f3b36824f194d01e9
+sudo rpi-update 655fc658a15ae7a6f37103754adb39ba52a9a14e
 sudo reboot
 ```
 
@@ -51,18 +51,17 @@ sudo reboot
 
 ### Add Driver Sources to RaspberryPi
 
-Download `ds90ub954.dtbo` and `ds90ub954.ko` from this release [Release 5.4.51-v7l](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/releases/tag/raspi-5.4.51-v7l%2B) onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
+Download `ds90ub954.dtbo` and `ds90ub954.ko` from this repos release (relase for kernel 6.1.47-v8+) onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
 
 ```bash
-//sudo chmod 777 ds90ub954.dtbo
 sudo cp ds90ub954.dtbo /boot/overlays/.
 sudo cp ds90ub954.ko /lib/modules/`uname -r`/kernel/drivers/media/i2c/.
 ```
 
-Get ds90ub954.ko to start at boot by opening `/etc/modules`:
+Get ds90ub954.ko to start at boot by opening `/etc/modules-load.d/modules.conf`:
 
 ```bash
-sudo nano /etc/modules
+sudo nano /etc/modules-load.d/modules.conf
 ```
 
 Insert the following line at the bottom of the file:
@@ -105,7 +104,7 @@ ls /dev/video0
 
 If the command returns `No such file or directory` then the loading of the imx219 module failed. This can happen when the imx219 sensor model is loaded before the ds90ub954 module has finished setting up the i2c channel. 
 
-This problem can be solved by reloading the imx219 module:
+This problem can be solved by reloading the imx219 module (has to be done again after every reboot):
 
 ```
 sudo modprobe -r imx219
@@ -114,39 +113,14 @@ sudo modprobe imx219
 
 Now `/dev/video0` should exist.
 
-### Install libcamera
+### Use libcamera to display video stream
 
-The follwing steps were taken from <https://www.raspberrypi.org/documentation/linux/software/libcamera/README.md>.
-
-Install software dependencies:
+Run the on kernel version 6.1.47-v8+ preinstalled libcamera-vid programm with a Resolution of 1920x1080 for 10 Seconds to stream from camera and display it:
 
 ```bash
-sudo apt install libboost-dev libgnutls28-dev openssl libtiff5-dev meson qtbase5-dev libqt5core5a libqt5gui5 libqt5widgets5
-sudo pip3 install pyyaml
+libcamera-vid --width 1920 --height 1080 -t 10000
 ```
 
-Get libcamera sources:
-
-```bash
-git clone git://linuxtv.org/libcamera.git
-cd libcamera
-```
-
-Build libcamera:
-
-```bash
-meson build
-cd build
-meson configure -Dpipelines=raspberrypi -Dtest=false
-cd ..
-sudo ninja -C build install
-```
-
-Run libcamera's qcam:
-
-```
-./build/src/qcam/qcam
-```
 
 ---
 

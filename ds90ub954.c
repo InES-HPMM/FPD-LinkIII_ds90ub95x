@@ -1210,7 +1210,7 @@ static int ds90ub953_i2c_client(struct ds90ub954_priv *priv, int ser_nr,
 	ser_board_info = devm_kzalloc(dev, sizeof(struct i2c_board_info), GFP_KERNEL);
 	ser_board_info->addr = addr;
 
-	new_client = i2c_new_device(priv->client->adapter, ser_board_info);
+	new_client = i2c_new_client_device(priv->client->adapter, ser_board_info);
 	if(!new_client) {
 		dev_warn(dev, "failed to add i2c client\n");
 		return -1;
@@ -1702,7 +1702,7 @@ err_parse_dt:
 	return err;
 }
 
-static int ds90ub954_remove(struct i2c_client *client)
+static void ds90ub954_remove(struct i2c_client *client)
 {
 	struct ds90ub954_priv *priv = dev_get_drvdata(&client->dev);
 
@@ -1711,7 +1711,6 @@ static int ds90ub954_remove(struct i2c_client *client)
 	ds90ub954_free_gpio(priv);
 
 	dev_info(&client->dev, "ds90ub954 removed\n");
-	return 0;
 }
 
 static const struct i2c_device_id ds90ub954_id[] = {

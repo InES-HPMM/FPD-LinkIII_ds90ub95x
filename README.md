@@ -43,7 +43,7 @@ sudo apt full-upgrade
 After a reboot, execute (if there is an error with an invalid hash, run the first command twice):
 
 ```bash
-sudo rpi-update 655fc658a15ae7a6f37103754adb39ba52a9a14e
+sudo rpi-update b2b3c05f6e9944c2e7eab8648a0cde932e25a31e
 sudo reboot
 ```
 

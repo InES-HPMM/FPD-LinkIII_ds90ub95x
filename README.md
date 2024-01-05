@@ -90,6 +90,34 @@ dtoverlay=imx219
 core_freq_min=250
 ```
 
+To ensure that the imx219 module will load after ds90ub954, add imx219 to the blacklist creating `/etc/modprobe.d/ds90ub954.conf`:
+```bash
+sudo nano /etc/modprobe.d/ds90ub954.conf
+```
+
+Insert the following line into the file:
+
+```bash
+blacklist imx219
+```
+
+Copy script and service files to the correct destinations:
+
+```bash
+sudo cp camera-module-load.sh /lib/systemd/
+sudo cp camera-module-load.service /usr/lib/systemd/system/
+```
+
+Make `/lib/systemd/camera-module-load.sh` executabe:
+```bash
+sudo chmod +x /lib/systemd/camera-module-load.sh
+```
+
+Enable `camera-module-load.service`:
+```bash
+sudo systemctl enable camera-module-load.service
+```
+
 Reboot the RaspberryPi:
 
 ```bash
@@ -101,17 +129,6 @@ If the module was successfully loaded, you should find a video0 device in the `/
 ```bash
 ls /dev/video0
 ```
-
-If the command returns `No such file or directory` then the loading of the imx219 module failed. This can happen when the imx219 sensor model is loaded before the ds90ub954 module has finished setting up the i2c channel. 
-
-This problem can be solved by reloading the imx219 module (has to be done again after every reboot):
-
-```
-sudo modprobe -r imx219
-sudo modprobe imx219
-```
-
-Now `/dev/video0` should exist.
 
 ### Use libcamera to display video stream
 

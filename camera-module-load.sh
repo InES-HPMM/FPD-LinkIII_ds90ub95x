@@ -2,7 +2,7 @@
 
 if [ -z "$1" ]
   then
-    echo "No divice file provided"
+    echo "No device file provided"
     exit 1
 fi
 

@@ -1,0 +1,12 @@
+[Unit]
+Description=Load camera driver module after ds90ub954
+Requires=systemd-modules-load.service
+After=systemd-modules-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/lib/systemd/camera-module-load.sh /sys/bus/i2c/devices/10-0030/test_pattern_des imx219
+TimeoutSec=10s
+
+[Install]
+WantedBy=multi-user.target

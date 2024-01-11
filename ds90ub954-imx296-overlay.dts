@@ -1,0 +1,58 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "brcm,bcm2711";
+
+	i2c_frag: fragment@0 {
+		target = <&i2c_csi_dsi>;
+
+		__overlay__ {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			status = "okay";
+
+			gpio_expander: gpio@38 {
+				compatible = "nxp,pca9534";
+				reg = <0x38>;
+				gpio-controller;
+				#gpio-cells = <0x02>;
+			};
+
+			fpdlink: ds90ub954@30 {
+				compatible = "ti,ds90ub954";
+				reg = <0x30>;
+				status = "okay";
+				csi-lane-count = <0x01>;
+				csi-lane-speed = <0x640>;
+				pdb-gpio  = <&gpio_expander 0x00 0x00>;
+				// pdb-gpios  = <&gpio 22 GPIO_ACTIVE_LOW>;
+				pass-gpios = <&gpio 17 GPIO_ACTIVE_LOW>;
+				lock-gpios = <&gpio 27 GPIO_ACTIVE_LOW>;
+
+				i2c_address_s0: num-alias-pairs-s0 {
+					list-cells = <0x02>;
+				};
+
+				serializers {
+					status = "okay";
+					num-channels = <0x02>;
+
+					serializer@0 {
+						status = "okay";
+						rx-channel = <0x01>;
+						i2c-address = <0x18>;
+						csi-lane-count = <0x01>;
+						gpio0-output-enable = <0x01>;
+						gpio0-control = <0x00>;
+						i2c-slave = <&i2c_address_s0 0x1a 0x64>;
+						slave-alias = <&i2c_address_s0 0x1a 0x64>;
+					};
+				};
+			};
+		};
+	};
+};

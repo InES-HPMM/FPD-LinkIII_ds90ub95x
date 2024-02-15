@@ -7,7 +7,7 @@ This repository contains an FDP Link III driver for ds90ub954 (deserializer) and
 
 __The group High Performance Multimedia from the Institute of Embedded Systems associated with ZHAW School of Engineering proudly presents an open source driver for TI devices DS90UB954 paired with DS90UB953.__
 
-__Additionally we made a TI FPD-Link III hardware compatible with the Raspberry Pi camera and the Raspberry Pi FFC (FPC, ZIF) camera connector:__
+__Additionally we made a TI FPD-Link III hardware compatible with the Raspberry Pi camera  (V2/V3) and the Raspberry Pi FFC (FPC, ZIF) camera connector:__
 <https://github.com/InES-HPMM/FPD-LinkIII_Raspberry_HW>
 
 > For recent news check out our [Blog](https://blog.zhaw.ch/high-performance/).
@@ -24,7 +24,7 @@ __Additionally we made a TI FPD-Link III hardware compatible with the Raspberry 
 
 This section gives instructions to setup a RaspberryPi 4 to use the hardware developed in: https://github.com/InES-HPMM/FPD-LinkIII_Raspberry_HW. 
 
-The raspian operating system comes with programs such as raspistill, raspivid and so forth which enables the user to record pictures/videos with the RaspberryPi Camera v2.1 (imx219). But when adding the FPD-Link III driver to the device tree, these programs will no longer work. An alternative way to get images from the camera is by using libcamera (<https://libcamera.org/>). Some libcamera applications are preinstalled in the kernel version 6.1.47. For this reason, these instructions will use the kernel version 6.1.47.
+The raspian operating system comes with programs such as raspistill, raspivid and so forth which enables the user to record pictures/videos with the RaspberryPi Camera v2.1 (imx219) and v3.12 (imx708). But when adding the FPD-Link III driver to the device tree, these programs will no longer work. An alternative way to get images from the camera is by using libcamera (<https://libcamera.org/>). Some libcamera applications are preinstalled in the kernel version 6.1.47. For this reason, these instructions will use the kernel version 6.1.47.
 
 ### Setup SD card
 Setup an SD card for the RaspberryPi. The easiest way is to install the Imager software from the official RaspberryPi sources: https://www.raspberrypi.org/downloads/. Run Imager and choose **Raspberry Pi OS (other)** and then the Operating System **Raspberry Pi OS (64-bit)**, choose your SD card and then press **Write**.
@@ -40,10 +40,10 @@ sudo apt update
 sudo apt full-upgrade
 ```
 
-After a reboot, execute (if there is an error with an invalid hash, run the first command twice):
+After a reboot, execute:
 
 ```bash
-sudo rpi-update 655fc658a15ae7a6f37103754adb39ba52a9a14e
+sudo rpi-update b2b3c05f6e9944c2e7eab8648a0cde932e25a31e
 sudo reboot
 ```
 
@@ -51,7 +51,11 @@ sudo reboot
 
 ### Add Driver Sources to RaspberryPi
 
-Download `ds90ub954.dtbo` and `ds90ub954.ko` from this release [6.1.47-v8+](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/releases/tag/raspi-6.1.47-v8%2B) onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
+Download `ds90ub954.dtbo` and `ds90ub954.ko` from this release:
+ - **Camera module v2.1**: [6.1.47-v8+ for Raspi Cam Module v2.1](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/releases/tag/raspi-6.1.47-v8%2B)
+ - **Camera module v3.12**: [6.1.47-v8+ for Raspi Cam module v3.12](https://github.com/InES-HPMM/FPD-LinkIII_ds90ub95x/releases/tag/raspi-6.1.47-v8%2B_camModuleV3.12)
+
+ onto the RaspberryPi. In the terminal go to the folder with the downloaded files and copy them to the correct destinations:
 
 ```bash
 sudo cp ds90ub954.dtbo /boot/overlays/.
@@ -76,40 +80,57 @@ Reload module dependencies by running:
 sudo depmod
 ```
 
-Update `/boot/config.txt`:
+Update `/boot/firmware/config.txt`:
 
 ```bash
-sudo nano /boot/config.txt
+sudo nano /boot/firmware/config.txt
 ```
 
 Add the following lines at the end of the file:
 
-```bash
-dtoverlay=ds90ub954
-dtoverlay=imx219
-core_freq_min=250
-```
+- **Camera module v2.1:**
+  ```bash
+  dtoverlay=ds90ub954
+  dtoverlay=imx219
+  core_freq_min=250
+  ```
+
+- **Camera module v3.12:**
+  ```bash
+  dtoverlay=ds90ub954
+  dtoverlay=imx708
+  core_freq_min=250
+  ```
 
 Reboot the RaspberryPi:
 
-```bash
+```
 sudo reboot
 ```
 
 If the module was successfully loaded, you should find a video0 device in the `/dev` folder:
 
-```bash
+```
 ls /dev/video0
 ```
 
-If the command returns `No such file or directory` then the loading of the imx219 module failed. This can happen when the imx219 sensor model is loaded before the ds90ub954 module has finished setting up the i2c channel. 
+If the command returns `No such file or directory` then the loading of the imx219/imx708 module failed. This can happen when the imx219/imx708 sensor model is loaded before the ds90ub954 module has finished setting up the i2c channel. 
 
-This problem can be solved by reloading the imx219 module (has to be done again after every reboot):
+This problem can be solved by reloading the imx219/imx708 module (has to be done again after every reboot):
 
-```
-sudo modprobe -r imx219
-sudo modprobe imx219
-```
+- **Camera module v2.1:**
+  ```bash
+  sudo modprobe -r imx219
+  sudo modprobe imx219
+  ```
+
+- **Camera module v3.12:** (Since the camera module v3 has an autofocus, the driver of the DAC that operates the voice coil must also be reloaded)
+  ```bash
+  sudo modprobe -r imx708
+  sudo modprobe -r dw9807_vcm
+  sudo modprobe imx708
+  sudo modprobe dw9807_vcm
+  ```
 
 Now `/dev/video0` should exist.
 
@@ -166,5 +187,4 @@ source "drivers/media/i2c/ds90ub95x/Kconfig"
 ```
 
 After this step, the driver module can be enabled in the menuconfig.
-
 
